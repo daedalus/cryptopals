@@ -88,7 +88,7 @@ def findSingleByteXOR(data):
 			BEST = score
 			PLAINTEXT = plaintext
 			KEY = key
-			#print "score:",score
+			print "Best Score:",score
 	return KEY,BEST,PLAINTEXT
 
 def hammingDistance(msg1,msg2):
@@ -138,9 +138,10 @@ def findRepatingXORKey(data):
 		print "index:",index
 		col = getCol(index)
 		KEY,SCORE,PLAINTEXT = findSingleByteXOR(col)
-		print (KEY,SCORE,PLAINTEXT,col.encode('hex'))
+		#print (KEY,SCORE,PLAINTEXT,col.encode('hex'))
+		keys.append(chr(KEY))
 
-	return keys
+	return "".join(keys)
 	
 
 def readBase64Decode(fn):
@@ -154,5 +155,4 @@ def readBase64Decode(fn):
 data = readBase64Decode(sys.argv[1])
 #print findRepeatingXORSize(data)
 d = findRepatingXORKey(data)
-for key in d:
-	print key
+print d

@@ -137,8 +137,8 @@ def findRepatingXORKey(data):
 	for index in range(0,int(len(data)/KEYSIZE)):
 		print "index:",index
 		col = getCol(index)
-		key,score,p = findSingleByteXOR(col)
-		print (key,score,p.encode('hex'),col.encode('hex'))
+		KEY,SCORE,PLAINTEXT = findSingleByteXOR(col)
+		print (KEY,SCORE,PLAINTEXT,col.encode('hex'))
 
 	return keys
 	

@@ -9,7 +9,7 @@ def XOR(a,b):
 			tmp += chr(ord(a[i]) ^ ord(b[i]))
 		return tmp
 	else:
-		raise Exeption("String Missmatch")
+		raise Exeption("String size Missmatch")
 
 
 def singleByteXOR(a,b):
@@ -31,22 +31,17 @@ def scoreChiSQ(str):
 	charCounts = [0] * 27
 	charFreqs = [0.0] *27
 	totCount = 0;
-
 	for c in list(str):
         	index = ord(c) - ord("A")
         	if(index>=0 and index<26):
             		charCounts[index]+=1
             		totCount+=1
-        
         	if(c==' '):
             		charCounts[26]+=1
             		totCount+=1
-	
     	if(totCount==0):
 		totCount=1; #//avoid divide by zero
-
     	chiSquaredScore=0.0;
-
 	for i in range(0,CHARS_CONSIDERED):
         	charFreqs[i]=float(charCounts[i])/float(totCount)
         	chiSquaredScore += (charFreqs[i] - expFreqsIncludingSpace[i])*(charFreqs[i]-expFreqsIncludingSpace[i])/(expFreqsIncludingSpace[i])
@@ -94,7 +89,6 @@ def findSingleByteXOR(data):
 			PLAINTEXT = plaintext
 			KEY = key
 			#print "score:",score
-						
 	return KEY,BEST,PLAINTEXT
 
 def hammingDistance(msg1,msg2):

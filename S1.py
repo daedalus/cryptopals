@@ -29,7 +29,7 @@ def repeatingXOR(ciphertext,key):
                 tmp += chr(ord(ciphertext[i]) ^ ord(key[i % len(key)]))
         return tmp
 
-def Score(string):
+def englishScore(string):
 	freq = dict()
 	freq['a']=834
 	freq['b']=154
@@ -70,7 +70,7 @@ def findSingleByteXOR(data):
 	PLAINTEXT = ""
 	for key in range(0,255):
 		plaintext = singleByteXOR(data,key)
-		score = Score(plaintext)
+		score = englishScore(plaintext)
 		if score > BEST:
 			BEST = score
 			KEY = key
@@ -113,7 +113,7 @@ def findRepatingXORKey(data):
 		for block in blocks:
 			k,s,t = findSingleByteXOR(block)
 			key += chr(k)
-		score = Score(key)
+		score = englishScore(key)
 		if score > best:
 			best = score
 			KEY = key

@@ -2,11 +2,12 @@
 # Autor Dario Clavijo 2017
 from S1 import *
 from Crypto.Cipher import AES
+from base64 import *
 
 pad = lambda s,n: s + chr(n- len(s)) * (n-len(s))
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
-def encryptECB(key,enc):
+def encryptECB(enc,key):
         cipher = AES.new(key, AES.MODE_ECB)
         return cipher.encrypt(enc)
 
@@ -32,9 +33,11 @@ def test1():
 	print u.encode('hex')
 
 def test2():
-	l = AES.block_size
-	data = open('10.txt').read().replace('\n','').decode('base64')
-	print decryptCBC(data,b'YELLOW SUBMARINE','\x00' * l)
+	IV = '\x00' * AES.block_size 
+	KEY = pad(b'YELLOW SUBMARINE',16)
+	print KEY,KEY.encode('hex'),len(KEY),len(IV)
+	data = b64decode(open('10.txt').read())
+	print decryptCBC(data,'YELLOW SUBMARINE',IV)
 
 #test1()
 test2()

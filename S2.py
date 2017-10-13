@@ -3,6 +3,8 @@
 from S1 import *
 from Crypto.Cipher import AES
 from base64 import *
+import random
+from Crypto import Random
 
 pad = lambda s,n: s + chr(n- len(s)) * (n-len(s))
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
@@ -11,6 +13,10 @@ def encryptECB(enc,key):
         cipher = AES.new(key, AES.MODE_ECB)
         return cipher.encrypt(enc)
 
+def encryptCBC(enc,key,IV):
+        cipher = AES.new(key, AES.MODE_CBC,IV)
+        return cipher.encrypt(enc)
+	
 def decryptCBC(data,key,iv):
 	l = len(iv)
 	tmp = ""
@@ -22,6 +28,26 @@ def decryptCBC(data,key,iv):
 		tmp += plain
 		lastblock = block
 	return tmp
+
+
+def oracleECBCBC(message):
+	BS=AES.block_size
+	key = Random.new().read(BS)
+	g = Random.new().read(10)
+	r = random.randrange(2)
+	message = (g + message + g).zfill(96)
+	#message = pad(message,64)
+
+
+	if r == 1:
+		#print "ECB"
+		data = encryptECB(message,key)
+	else:
+		#print "CBC"
+		IV = Random.new().read(BS)
+		data = encryptCBC(message,key,IV)	
+
+	return data
 
 def test1():
 	print "C9-S2C1"
@@ -39,5 +65,18 @@ def test2():
 	data = b64decode(open('10.txt').read())
 	print decryptCBC(data,'YELLOW SUBMARINE',IV)
 
+
+def test3():
+	for i in range(0,10):
+		c = oracleECBCBC('THIS IS A VERY IMPORTANT MESSAGE FOR DECRYPT')
+		ecb = detectECB(c)
+		if ecb > 0:
+			print "ECB",c.encode('hex')
+		else:
+			print "CBC",c.encode('hex')
+
 #test1()
-test2()
+#test2()
+test3()
+
+

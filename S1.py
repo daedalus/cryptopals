@@ -127,7 +127,28 @@ def readBase64Decode(fn):
 		data += line
 	return data.decode('base64')
 
+def decryptECB(key,enc):
+        enc = enc.decode('base64')
+        cipher = AES.new(key, AES.MODE_ECB)
+        return unpad(cipher.decrypt(enc)).decode('utf8')
 
+def detectECB(data):
+	blocks = []
+	distances = []
+	found = 0
+	for i in range(0,len(data),16):
+		blocks.append(data[i:i+16])
+
+	for i in range(0,len(blocks)):
+		for j in range(0,len(blocks)):
+			if i != j:
+				distances.append((i,j,hammingDistance(blocks[i],blocks[j])))
+
+	for distance in distances:
+		if distance[2] == 0:
+			found+=1
+
+	return found
 
 def test3():
 	print "S1C3"
@@ -147,12 +168,7 @@ def test4():
 			BEST = B
 			KEY = K
 			PLAINTEXT=P
-	print KEY,BEST,PLAINTEXT
-		
-def decrypt_ECB(key,enc):
-        enc = enc.decode('base64')
-        cipher = AES.new(key, AES.MODE_ECB)
-        return unpad(cipher.decrypt(enc)).decode('utf8')
+	print BEST,KEY,PLAINTEXT
 
 def test6():
 	print "S1C6"
@@ -165,9 +181,18 @@ def test7():
 	print "S1C7"
 	key = "YELLOW SUBMARINE"
 	enc = open('7.txt').read().replace('\n','')
-	print decrypt_ECB(key,enc)
+	print decryptECB(key,enc)
+
+def test8():
+	fp = open('8.txt')
+	for line in fp:
+		data = line.replace('\n','').decode('hex')
+		if detectECB(data) > 0:
+			print data.encode('hex')
+
 
 test3()
 test4()
 test6()
 test7()
+test8()

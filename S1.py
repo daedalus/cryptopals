@@ -127,7 +127,7 @@ def readBase64Decode(fn):
 		data += line
 	return data.decode('base64')
 
-def decryptECB(key,enc):
+def decryptECB(enc,key):
         cipher = AES.new(key, AES.MODE_ECB)
         return cipher.decrypt(enc)
 
@@ -178,7 +178,7 @@ def test7():
 	print "S1C7"
 	key = "YELLOW SUBMARINE"
 	enc = open('7.txt').read().replace('\n','').decode('base64')
-	print decryptECB(key,enc)
+	print decryptECB(enc,key)
 
 def test8():
 	print "S1C8"

@@ -128,9 +128,8 @@ def readBase64Decode(fn):
 	return data.decode('base64')
 
 def decryptECB(key,enc):
-        enc = enc.decode('base64')
         cipher = AES.new(key, AES.MODE_ECB)
-        return unpad(cipher.decrypt(enc)).decode('utf8')
+        return cipher.decrypt(enc)
 
 def detectECB(data):
 	blocks = []
@@ -178,7 +177,7 @@ def test6():
 def test7():
 	print "S1C7"
 	key = "YELLOW SUBMARINE"
-	enc = open('7.txt').read().replace('\n','')
+	enc = open('7.txt').read().replace('\n','').decode('base64')
 	print decryptECB(key,enc)
 
 def test8():
@@ -190,8 +189,9 @@ def test8():
 			print data.encode('hex')
 
 
-test3()
-test4()
-test6()
-test7()
-test8()
+def tests():
+	test3()
+	test4()
+	test6()
+	test7()
+	test8()

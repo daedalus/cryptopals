@@ -1,4 +1,7 @@
 import sys
+from Crypto.Cipher import AES
+unpad = lambda s: s[:-ord(s[len(s) - 1:])]
+
 def hextobase64(h):
 	return h.decode('hex').encode('base64').replace('\n','') 
 
@@ -127,9 +130,11 @@ def readBase64Decode(fn):
 
 
 def test3():
+	print "S1C3"
 	print findSingleByteXOR("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736".decode('hex'))
 
 def test4():
+	print "S1C4"
 	i = 0
 	BEST = 0
 	PLAINTEXT =""
@@ -144,13 +149,25 @@ def test4():
 			PLAINTEXT=P
 	print KEY,BEST,PLAINTEXT
 		
+def decrypt_ECB(key,enc):
+        enc = enc.decode('base64')
+        cipher = AES.new(key, AES.MODE_ECB)
+        return unpad(cipher.decrypt(enc)).decode('utf8')
 
 def test6():
+	print "S1C6"
 	data = readBase64Decode('6.txt')
 	KEY = findRepatingXORKey(data)
 	print "KEY:[", KEY,"]"
 	print "DATA:\n",repeatingXOR(data, KEY)
 
+def test7():
+	print "S1C7"
+	key = "YELLOW SUBMARINE"
+	enc = open('7.txt').read().replace('\n','')
+	print decrypt_ECB(key,enc)
+
 test3()
 test4()
 test6()
+test7()

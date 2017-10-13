@@ -29,24 +29,17 @@ def decryptCBC(data,key,iv):
 		lastblock = block
 	return tmp
 
-
 def oracleECBCBC(message):
 	BS=AES.block_size
 	key = Random.new().read(BS)
 	g = Random.new().read(10)
 	r = random.randrange(2)
 	message = (g + message + g).zfill(96)
-	#message = pad(message,64)
-
-
 	if r == 1:
-		#print "ECB"
 		data = encryptECB(message,key)
 	else:
-		#print "CBC"
 		IV = Random.new().read(BS)
 		data = encryptCBC(message,key,IV)	
-
 	return data
 
 def test1():
@@ -78,5 +71,3 @@ def test3():
 #test1()
 #test2()
 test3()
-
-

@@ -24,71 +24,52 @@ def repeatingXOR(ciphertext,key):
                 tmp += chr(ord(ciphertext[i]) ^ ord(key[i % len(key)]))
         return tmp
 
-def scoreChiSQ(str):
-	expFreqsIncludingSpace = [0.0651738, 0.0124248, 0.0217339, 0.0349835, 0.1041442, 0.0197881, 0.0158610, 0.0492888, 0.0558094, 0.0009033, 0.0050529, 0.0331490, 0.0202124, 0.0564513, 0.0596302, 0.0137645, 0.0008606, 0.0497563, 0.0515760, 0.0729357, 0.0225134, 0.0082903, 0.0171272, 0.0013692, 0.0145984, 0.0007836, 0.1918182]
-	str = str.lower()
-	CHARS_CONSIDERED=27	
-	charCounts = [0] * 27
-	charFreqs = [0.0] *27
-	totCount = 0;
-	for c in list(str):
-        	index = ord(c) - ord("A")
-        	if(index>=0 and index<26):
-            		charCounts[index]+=1
-            		totCount+=1
-        	if(c==' '):
-            		charCounts[26]+=1
-            		totCount+=1
-    	if(totCount==0):
-		totCount=1; #//avoid divide by zero
-    	chiSquaredScore=0.0;
-	for i in range(0,CHARS_CONSIDERED):
-        	charFreqs[i]=float(charCounts[i])/float(totCount)
-        	chiSquaredScore += (charFreqs[i] - expFreqsIncludingSpace[i])*(charFreqs[i]-expFreqsIncludingSpace[i])/(expFreqsIncludingSpace[i])
-	return chiSquaredScore;     
-
-wl = []
-def loadDict():
-	global wl
-	fp = open('/usr/share/dict/american-english')
-	for line in fp:
-		wl.append(line.rstrip())
-	fp.close()
-
-loadDict()
-
-def dictScore(msg):
-	global wl
-	#print "wl:",len(wl)
-
-	score = 0
-	msg = msg.split(" ")
-	for word in msg:
-		if word in wl:
-			score += 1
-	return score
+def Score(string):
+	freq = dict()
+	freq['a']=834
+	freq['b']=154
+	freq['c']=273
+	freq['d']=414
+	freq['e']=1260
+	freq['f']=203
+	freq['g']=192
+	freq['h']=611
+	freq['i']=671
+	freq['j']=23
+	freq['k']=87
+	freq['l']=424
+	freq['m']=253
+	freq['n']=680
+	freq['o']=770
+	freq['p']=166
+	freq['q']=9
+	freq['r']=568
+	freq['s']=611
+	freq['t']=937
+	freq['u']=285
+	freq['v']=106
+	freq['w']=234
+	freq['x']=20
+	freq['y']=204
+	freq['z']=6
+	freq[' ']=2320
+	ret = 0
+	for c in string.lower():
+		if c in freq:
+			ret += freq[c]
+	return ret
 
 def findSingleByteXOR(data):
-	best = 0.0
-	key = 0
-	cand = []
-	plaintext = ""
-	for KEY in range(0,255):
-		plaintext = singleByteXOR(data,KEY)
-		score = scoreChiSQ(plaintext)
-		if score >= best:
-			best = score
-			cand.append((plaintext,KEY))
-	BEST = 0
-	print "cand:",len(cand)
-	for plaintext,key in cand:
-		score = dictScore(plaintext)
-		#print score
+	BEST = 0	
+	KEY = 0
+	PLAINTEXT = ""
+	for key in range(0,255):
+		plaintext = singleByteXOR(data,key)
+		score = Score(plaintext)
 		if score > BEST:
 			BEST = score
-			PLAINTEXT = plaintext
 			KEY = key
-			print "Best Score:",score
+			PLAINTEXT = plaintext
 	return KEY,BEST,PLAINTEXT
 
 def hammingDistance(msg1,msg2):
@@ -99,50 +80,41 @@ def hammingDistance(msg1,msg2):
 			count += ((ord(d[i]) & (1 << j)) >> j)
 	return count
 
-def findRepeatingXORSize(data):
-	bestScore = 0.0
-	bestScore = sys.float_info.max
-	for KEYSIZE in range(2,40):
-		a = data[:KEYSIZE]
-		b = data[KEYSIZE:KEYSIZE*2]		
-		score = hammingDistance(a,b) / float(KEYSIZE)
-		if score < bestScore:
-			res = KEYSIZE
-			bestScore = score
-	return res
+def findRepeatingXORSize(n,data):
+	BESTSCORE = sys.float_info.max
+	KEYSIZE=0
+	for keysize in range(1,41):
+		a = data[:keysize*n]
+		b = data[keysize*n:keysize*n*2]		
+		score = hammingDistance(a,b) 
+		score /= float(keysize)
+		if score < BESTSCORE:
+			KEYSIZE = keysize
+			BESTSCORE = score
+	return KEYSIZE,BESTSCORE
 
 
 def findRepatingXORKey(data):
-	blocks = []
-	KEYSIZE=findRepeatingXORSize(data)
-
-	print "KEYSIZE:",KEYSIZE	
-
-	for i in range(0,len(data),KEYSIZE):
-		blocks.append(list(data[i:i+KEYSIZE]))
-	
-	transposed = [[""] * len(blocks)] * int(len(data)/KEYSIZE)
-
-	for i in range(0,len(blocks)):
-		for j in range(0,len(blocks[i])):
-			transposed[j][i] = blocks[i][j]
-	
-	def getCol(index):
-		tmp = ""
-		for i in range(0,len(blocks)):
-			tmp += transposed[index][i]
-		return tmp
-	
-	keys = []
-	for index in range(0,int(len(data)/KEYSIZE)):
-		print "index:",index
-		col = getCol(index)
-		KEY,SCORE,PLAINTEXT = findSingleByteXOR(col)
-		#print (KEY,SCORE,PLAINTEXT,col.encode('hex'))
-		keys.append(chr(KEY))
-
-	return "".join(keys)
-	
+	best = 0 
+	KEY = ""
+	for n in range(1,5):
+		blocks = []
+		keysize,best=findRepeatingXORSize(n,data)
+		
+		blocksize=len(data)/keysize
+		blocks = [""] * keysize
+		for i in range(0,len(data)):
+			blocks[i % keysize] += data[i]
+		key = ""
+		for block in blocks:
+			k,s,t = findSingleByteXOR(block)
+			key += chr(k)
+		score = Score(key)
+		if score > best:
+			best = score
+			KEY = key
+	return KEY
+		
 
 def readBase64Decode(fn):
 	fp = open(fn)
@@ -152,7 +124,33 @@ def readBase64Decode(fn):
 		data += line
 	return data.decode('base64')
 
-data = readBase64Decode(sys.argv[1])
-#print findRepeatingXORSize(data)
-d = findRepatingXORKey(data)
-print d
+
+
+def test3():
+	print findSingleByteXOR("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736".decode('hex'))
+
+def test4():
+	i = 0
+	BEST = 0
+	PLAINTEXT =""
+	fp = open('4.txt')
+	for line in fp:
+		i+=1
+		line = line.rstrip()
+		K,B,P = findSingleByteXOR(line.decode('hex'))
+		if B > BEST:
+			BEST = B
+			KEY = K
+			PLAINTEXT=P
+	print KEY,BEST,PLAINTEXT
+		
+
+def test6():
+	data = readBase64Decode('6.txt')
+	KEY = findRepatingXORKey(data)
+	print "KEY:[", KEY,"]"
+	print "DATA:\n",repeatingXOR(data, KEY)
+
+test3()
+test4()
+test6()

@@ -85,10 +85,10 @@ def hammingDistance(msg1,msg2):
 			count += ((ord(d[i]) & (1 << j)) >> j)
 	return count
 
-def findRepeatingXORSize(n,data):
+def findBLOCKSize(n,data):
 	BESTSCORE = sys.float_info.max
 	KEYSIZE=0
-	for keysize in range(1,41):
+	for keysize in range(1,64):
 		a = data[:keysize*n]
 		b = data[keysize*n:keysize*n*2]		
 		score = hammingDistance(a,b) 
@@ -103,7 +103,7 @@ def findRepatingXORKey(data):
 	KEY = ""
 	for n in range(1,5):
 		blocks = []
-		keysize,best=findRepeatingXORSize(n,data)
+		keysize,best=findBLOCKSize(n,data)
 		
 		blocksize=len(data)/keysize
 		blocks = [""] * keysize
@@ -144,7 +144,8 @@ def detectECB(data):
 				distances.append((i,j,hammingDistance(blocks[i],blocks[j])))
 	for distance in distances:
 		if distance[2] == 0:
-			found+=1
+			found += 1
+			#print distance
 	return found
 
 def test3():

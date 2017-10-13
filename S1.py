@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# Author Dario Clavijo 2017
+
 import sys
 from Crypto.Cipher import AES
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
@@ -13,7 +16,6 @@ def XOR(a,b):
 		return tmp
 	else:
 		raise Exeption("String size Missmatch")
-
 
 def singleByteXOR(a,b):
 	tmp = ""
@@ -96,7 +98,6 @@ def findRepeatingXORSize(n,data):
 			BESTSCORE = score
 	return KEYSIZE,BESTSCORE
 
-
 def findRepatingXORKey(data):
 	best = 0 
 	KEY = ""
@@ -118,7 +119,6 @@ def findRepatingXORKey(data):
 			KEY = key
 	return KEY
 		
-
 def readBase64Decode(fn):
 	fp = open(fn)
 	data = ""
@@ -143,11 +143,9 @@ def detectECB(data):
 		for j in range(0,len(blocks)):
 			if i != j:
 				distances.append((i,j,hammingDistance(blocks[i],blocks[j])))
-
 	for distance in distances:
 		if distance[2] == 0:
 			found+=1
-
 	return found
 
 def test3():
@@ -184,6 +182,7 @@ def test7():
 	print decryptECB(key,enc)
 
 def test8():
+	print "S1C8"
 	fp = open('8.txt')
 	for line in fp:
 		data = line.replace('\n','').decode('hex')

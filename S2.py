@@ -6,7 +6,7 @@ from base64 import *
 import random
 from Crypto import Random
 
-pad = lambda s,n: s + chr(n- len(s)) * (n-len(s))
+pad = lambda s,n: s + chr(n- (len(s)%n)) * (n-(len(s)%n))
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
 def encryptECB(enc,key):
@@ -33,7 +33,7 @@ def oracleECBCBC(message,key):
 	BS = AES.block_size
 	g = Random.new().read(10)
 	r = random.randrange(2)
-	message = (g + message + g).zfill(128)
+	message = pad(g + message + g,16)
 	if r == 1:
 		data = encryptECB(message,key)
 	else:
@@ -72,46 +72,50 @@ def test3():
 
 def test4():
 	key = Random.new().read(16)
-	UNKNOWN = b64decode("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
-	KNOWN = "\n\n"
-	S = (KNOWN+UNKNOWN).zfill(224)
+	UNKNOWN = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK"
+	KNOWN = ""
 
-	def oracle(msg):
+	def oracle(plaintext):
 		# key is supposed to be internal to the oracle, we dont know it.
-		c = encryptECB(msg,key)
+		plaintext = pad(plaintext+b64decode(UNKNOWN),16)
+		c = encryptECB(plaintext,key)
 		return c # ECB detected
-
-	if detectECB(oracle(S)) == 0:
-		sys.exit(0)
-	else:
-		print "ECB MODE detected"
 
 	def detectOracleBLOCKSIZE(oracle,msg):
 		c = oracle(msg)
 		B,s = findBLOCKSize(1,c)
 		return B
 
-	print "LEN UNKNOWN DATA:",len(S)
-	BLOCKSIZE = detectOracleBLOCKSIZE(oracle,S)
+	BLOCKSIZE = detectOracleBLOCKSIZE(oracle,"0"*32)
 
 	print "BLOCKSIZE detected:",BLOCKSIZE
 
-	def crackOracle(oracle,msg):
-		tmp = ""
-		for i in range(0,len(msg),BLOCKSIZE):
-			block = msg[i:i+BLOCKSIZE]
-			known = ""
-			target = oracle(block)
-			for j in range(0,BLOCKSIZE):
-				for k in range(0,255):
-					candidate = block[0:j]  + chr(k)  + block[j+1:BLOCKSIZE]
-    					c = oracle(candidate)
-					if c == target:
-						known+=chr(k)
-			tmp += known
-		return tmp		
+	if detectECB(oracle("1"*32)) == 0:
+		print "ECB!"
+		sys.exit(0)
+	else:
+		print "ECB MODE detected"
 
-	print crackOracle(oracle,S)
+	def getNextByte(oracle,blockSize,knownString):
+		myString = "0" * (blockSize - (len(knownString) % blockSize) -1 )
+		d = {}
+		for i in range(0,256):
+			candidate = oracle(myString+knownString+chr(i))	
+			l = len(myString) + len(knownString)+1
+			d[candidate[0:l]] = i
+		target = oracle(myString)
+		u = target[0:l]
+		if u in d:
+			return d[u]
+		return None
+
+	while True:
+		b = getNextByte(oracle,BLOCKSIZE,KNOWN)
+		if b is None:
+			break
+		KNOWN += chr(b)
+
+	print KNOWN
 
 #test1()
 #test2()

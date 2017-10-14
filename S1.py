@@ -2,6 +2,7 @@
 # Author Dario Clavijo 2017
 
 import sys
+import itertools
 from Crypto.Cipher import AES
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
@@ -85,7 +86,7 @@ def hammingDistance(msg1,msg2):
 			count += ((ord(d[i]) & (1 << j)) >> j)
 	return count
 
-def findBLOCKSize(n,data):
+def findXORBLOCKSize(n,data):
 	BESTSCORE = sys.float_info.max
 	KEYSIZE=0
 	for keysize in range(1,64):
@@ -101,22 +102,21 @@ def findBLOCKSize(n,data):
 def findRepatingXORKey(data):
 	best = 0 
 	KEY = ""
-	for n in range(1,5):
-		blocks = []
-		keysize,best=findBLOCKSize(n,data)
-		
-		blocksize=len(data)/keysize
-		blocks = [""] * keysize
-		for i in range(0,len(data)):
-			blocks[i % keysize] += data[i]
-		key = ""
-		for block in blocks:
-			k,s,t = findSingleByteXOR(block)
-			key += chr(k)
-		score = englishScore(key)
-		if score > best:
-			best = score
-			KEY = key
+	blocks = []
+	keysize,best=findXORBLOCKSize(n,data)
+	
+	blocksize=len(data)/keysize
+	blocks = [""] * keysize
+	for i in range(0,len(data)):
+		blocks[i % keysize] += data[i]
+	key = ""
+	for block in blocks:
+		k,s,t = findSingleByteXOR(block)
+		key += chr(k)
+	score = englishScore(key)
+	if score > best:
+		best = score
+		KEY = key
 	return KEY
 		
 def readBase64Decode(fn):

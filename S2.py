@@ -73,53 +73,45 @@ def test3():
 def test4():
 	key = Random.new().read(16)
 	UNKNOWN = b64decode("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
-	KNOWN = ""
+	KNOWN = "\n\n"
+	S = (KNOWN+UNKNOWN).zfill(224)
 
-		
-
-	def oracle(msg,key):
+	def oracle(msg):
+		# key is supposed to be internal to the oracle, we dont know it.
 		c = encryptECB(msg,key)
 		return c # ECB detected
 
-	if detectECB(oracle(UNKNOWN.zfill(224),key)) == 0:
+	if detectECB(oracle(S)) == 0:
 		sys.exit(0)
 	else:
 		print "ECB MODE detected"
 
-	def detectOracleBLOCKSIZE(oracle,msg,key):
-		c = oracle(msg,key)
+	def detectOracleBLOCKSIZE(oracle,msg):
+		c = oracle(msg)
 		B,s = findBLOCKSize(1,c)
 		return B
 
-	print "LEN UNKNOWN DATA:",len(UNKNOWN)
-	BLOCKSIZE = detectOracleBLOCKSIZE(oracle,UNKNOWN.zfill(256),key)
+	print "LEN UNKNOWN DATA:",len(S)
+	BLOCKSIZE = detectOracleBLOCKSIZE(oracle,S)
 
 	print "BLOCKSIZE detected:",BLOCKSIZE
 
+	def crackOracle(oracle,msg):
+		tmp = ""
+		for i in range(0,len(msg),BLOCKSIZE):
+			block = msg[i:i+BLOCKSIZE]
+			known = ""
+			target = oracle(block)
+			for j in range(0,BLOCKSIZE):
+				for k in range(0,255):
+					candidate = block[0:j]  + chr(k)  + block[j+1:BLOCKSIZE]
+    					c = oracle(candidate)
+					if c == target:
+						known+=chr(k)
+			tmp += known
+		return tmp		
 
-
-	def findnNextByte(oracle,BLOCKSIZE,KNOWN):	
-		#print len(UNKNOWN[0:BLOCKSIZE])
-		target = oracle(UNKNOWN[0:BLOCKSIZE],key)
-		#print target
-		print "Target:",target.encode('hex')
-		ISTR = UNKNOWN[0:BLOCKSIZE-1]
-		for i in range(0,255):
-			test = ISTR + chr(i)
-			testc = oracle(test,key)
-			if testc == target:
-				return chr(i)
-		return None
-
-	while True:
-		b = findnNextByte(oracle,BLOCKSIZE,UNKNOWN)
-		KNOWN += b
-		if b != None:
-			break
-
-	print KNOWN
-		
-	
+	print crackOracle(oracle,S)
 
 #test1()
 #test2()

@@ -103,7 +103,7 @@ def findRepatingXORKey(data):
 	best = 0 
 	KEY = ""
 	blocks = []
-	keysize,best=findXORBLOCKSize(n,data)
+	keysize,best=findXORBLOCKSize(1,data)
 	
 	blocksize=len(data)/keysize
 	blocks = [""] * keysize
@@ -168,12 +168,17 @@ def test4():
 			PLAINTEXT=P
 	print BEST,KEY,PLAINTEXT
 
-def test6():
-	print "S1C6"
-	data = readBase64Decode('6.txt')
+def crackRepeatingXOR(fn):
+	data = readBase64Decode(fn)
 	KEY = findRepatingXORKey(data)
 	print "KEY:[", KEY,"]"
 	print "DATA:\n",repeatingXOR(data, KEY)
+
+def test6()
+	crackRepeatingXOR('6.txt')
+
+def test6_rc4()
+	crackRepeatingXOR('testRC4.txt')
 
 def test7():
 	print "S1C7"
@@ -196,3 +201,5 @@ def tests():
 	test6()
 	test7()
 	test8()
+
+tests()

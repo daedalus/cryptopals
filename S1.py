@@ -174,7 +174,7 @@ def crackRepeatingXOR(fn):
 	print "KEY:[", KEY,"]"
 	print "DATA:\n",repeatingXOR(data, KEY)
 
-def test6()
+def test6():
 	print "S1C6"
 	crackRepeatingXOR('6.txt')
 

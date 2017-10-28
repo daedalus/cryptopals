@@ -16,7 +16,7 @@ def encryptECB(enc,key):
 def encryptCBC(enc,key,IV):
         cipher = AES.new(key, AES.MODE_CBC,IV)
         return cipher.encrypt(enc)
-	
+
 def decryptCBC(data,key,iv):
 	l = len(iv)
 	tmp = ""
@@ -38,7 +38,7 @@ def oracleECBCBC(message,key):
 		data = encryptECB(message,key)
 	else:
 		IV = Random.new().read(BS)
-		data = encryptCBC(message,key,IV)	
+		data = encryptCBC(message,key,IV)
 	return data
 
 def detectOracleMethod(encryptionOracle,message,key):
@@ -72,7 +72,7 @@ def getNextByte(oracle,blockSize,knownString):
 	myString = "0" * (blockSize - (len(knownString) % blockSize) -1 )
 	d = {}
 	for i in range(0,256):
-		candidate = oracle(myString+knownString+chr(i))	
+		candidate = oracle(myString+knownString+chr(i))
 		l = len(myString) + len(knownString)+1
 		d[candidate[0:l]] = i
 	target = oracle(myString)
@@ -100,7 +100,7 @@ def test9():
 	print u.encode('hex')
 
 def test10():
-	IV = '\x00' * AES.block_size 
+	IV = '\x00' * AES.block_size
 	KEY = pad(b'YELLOW SUBMARINE',16)
 	print KEY,KEY.encode('hex'),len(KEY),len(IV)
 	data = b64decode(open('10.txt').read())
@@ -110,7 +110,7 @@ def test11():
 	for i in range(0,10):
 		key = Random.new().read(16)
 		msg = 'THIS IS A VERY IMPORTANT MESSAGE FOR DECRYPT'
-		print detectOracleMethod(oracleECBCBC,msg,key) 
+		print detectOracleMethod(oracleECBCBC,msg,key)
 
 def test12():
 	key = Random.new().read(16)

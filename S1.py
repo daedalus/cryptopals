@@ -7,7 +7,7 @@ from Crypto.Cipher import AES
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
 def hextobase64(h):
-	return h.decode('hex').encode('base64').replace('\n','') 
+	return h.decode('hex').encode('base64').replace('\n','')
 
 def XOR(a,b):
 	tmp =""
@@ -66,7 +66,7 @@ def englishScore(string):
 	return ret
 
 def findSingleByteXOR(data):
-	BEST = 0	
+	BEST = 0
 	KEY = 0
 	PLAINTEXT = ""
 	for key in range(0,255):
@@ -91,8 +91,8 @@ def findXORBLOCKSize(n,data):
 	KEYSIZE=0
 	for keysize in range(1,64):
 		a = data[:keysize*n]
-		b = data[keysize*n:keysize*n*2]		
-		score = hammingDistance(a,b) 
+		b = data[keysize*n:keysize*n*2]
+		score = hammingDistance(a,b)
 		score /= float(keysize)
 		if score < BESTSCORE:
 			KEYSIZE = keysize
@@ -100,11 +100,11 @@ def findXORBLOCKSize(n,data):
 	return KEYSIZE,BESTSCORE
 
 def findRepatingXORKey(data):
-	best = 0 
+	best = 0
 	KEY = ""
 	blocks = []
 	keysize,best=findXORBLOCKSize(1,data)
-	
+
 	blocksize=len(data)/keysize
 	blocks = [""] * keysize
 	for i in range(0,len(data)):
@@ -118,7 +118,7 @@ def findRepatingXORKey(data):
 		best = score
 		KEY = key
 	return KEY
-		
+
 def readBase64Decode(fn):
 	fp = open(fn)
 	data = ""

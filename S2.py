@@ -90,7 +90,7 @@ def crackECBOracle(oracle,blockSize,knownBytes):
 
 	return knownBytes
 
-def test1():
+def test9():
 	print "C9-S2C1"
 	u = ("Dario Clavijo")
 	print u.encode('hex')
@@ -99,20 +99,20 @@ def test1():
 	u = unpad(p)
 	print u.encode('hex')
 
-def test2():
+def test10():
 	IV = '\x00' * AES.block_size 
 	KEY = pad(b'YELLOW SUBMARINE',16)
 	print KEY,KEY.encode('hex'),len(KEY),len(IV)
 	data = b64decode(open('10.txt').read())
 	print decryptCBC(data,KEY,IV)
 
-def test3():
+def test11():
 	for i in range(0,10):
 		key = Random.new().read(16)
 		msg = 'THIS IS A VERY IMPORTANT MESSAGE FOR DECRYPT'
 		print detectOracleMethod(oracleECBCBC,msg,key) 
 
-def test4():
+def test12():
 	key = Random.new().read(16)
 	UNKNOWN = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK"
 
@@ -151,7 +151,7 @@ def JSONtoKV(s):
 		kvs.append(k + "=" + v)
 	return "&".join(kvs)
 
-#test1()
-#test2()
-#test3()
-test4()
+#test9()
+#test10()
+#test11()
+test12()

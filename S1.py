@@ -178,9 +178,6 @@ def test6():
 	print "S1C6"
 	crackRepeatingXOR('6.txt')
 
-def test6_rc4()
-	crackRepeatingXOR('testRC4.txt')
-
 def test7():
 	print "S1C7"
 	key = "YELLOW SUBMARINE"

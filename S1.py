@@ -4,31 +4,25 @@
 import sys
 import itertools
 from Crypto.Cipher import AES
-unpad = lambda s: s[:-ord(s[len(s) - 1:])]
+unpad = lambda s: s[:-ord(s[-1:])]
 
 def hextobase64(h):
 	return h.decode('hex').encode('base64').replace('\n','')
 
 def XOR(a,b):
-	tmp =""
 	if len(a) == len(b):
-		for i in range(0,len(a)):
-			tmp += chr(ord(a[i]) ^ ord(b[i]))
-		return tmp
+		return "".join(chr(ord(a[i]) ^ ord(b[i])) for i in range(0,len(a)))
 	else:
 		raise Exeption("String size Missmatch")
 
 def singleByteXOR(a,b):
-	tmp = ""
-	for i in range(0,len(a)):
-		tmp += chr(ord(a[i]) ^ b)
-	return tmp
+	return "".join(chr(ord(a[i]) ^ b) for i in range(0,len(a)))
 
 def repeatingXOR(ciphertext,key):
-        tmp = ""
-        for i in range(0,len(ciphertext)):
-                tmp += chr(ord(ciphertext[i]) ^ ord(key[i % len(key)]))
-        return tmp
+	return "".join(
+		chr(ord(ciphertext[i]) ^ ord(key[i % len(key)]))
+		for i in range(0, len(ciphertext))
+	)
 
 def englishScore(string):
 	freq = dict()
@@ -59,11 +53,7 @@ def englishScore(string):
 	freq['y']=204
 	freq['z']=6
 	freq[' ']=2320
-	ret = 0
-	for c in string.lower():
-		if c in freq:
-			ret += freq[c]
-	return ret
+	return sum(freq[c] for c in string.lower() if c in freq)
 
 def findSingleByteXOR(data):
 	BEST = 0
@@ -80,11 +70,10 @@ def findSingleByteXOR(data):
 
 def hammingDistance(msg1,msg2):
 	d = XOR(msg1,msg2)
-	count = 0
-	for i in range(0,len(d)):
-		for j in range(0,8):
-			count += ((ord(d[i]) & (1 << j)) >> j)
-	return count
+	return sum(
+		((ord(d[i]) & (1 << j)) >> j)
+		for i, j in itertools.product(range(0, len(d)), range(0, 8))
+	)
 
 def findXORBLOCKSize(n,data):
 	BESTSCORE = sys.float_info.max
@@ -132,21 +121,15 @@ def decryptECB(enc,key):
         return cipher.decrypt(enc)
 
 def detectECB(data):
-	blocks = []
 	distances = []
-	found = 0
-	for i in range(0,len(data),16):
-		blocks.append(data[i:i+16])
-
+	blocks = [data[i:i+16] for i in range(0,len(data),16)]
 	for i in range(0,len(blocks)):
-		for j in range(0,len(blocks)):
-			if i != j:
-				distances.append((i,j,hammingDistance(blocks[i],blocks[j])))
-	for distance in distances:
-		if distance[2] == 0:
-			found += 1
-			#print distance
-	return found
+		distances.extend(
+			(i, j, hammingDistance(blocks[i], blocks[j]))
+			for j in range(0, len(blocks))
+			if i != j
+		)
+	return sum(1 for distance in distances if distance[2] == 0)
 
 def test3():
 	print "S1C3"

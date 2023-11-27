@@ -7,7 +7,7 @@ import random
 from Crypto import Random
 
 pad = lambda s,n: s + chr(n- (len(s)%n)) * (n-(len(s)%n))
-unpad = lambda s: s[:-ord(s[len(s) - 1:])]
+unpad = lambda s: s[:-ord(s[-1:])]
 
 def encryptECB(enc,key):
         cipher = AES.new(key, AES.MODE_ECB)
@@ -30,22 +30,18 @@ def decryptCBC(data,key,iv):
 	return tmp
 
 def oracleECBCBC(message,key):
-	BS = AES.block_size
-	g = Random.new().read(10)
-	r = random.randrange(2)
-	message = pad(g + message + g,16)
-	if r == 1:
-		data = encryptECB(message,key)
-	else:
-		IV = Random.new().read(BS)
-		data = encryptCBC(message,key,IV)
-	return data
+        BS = AES.block_size
+        g = Random.new().read(10)
+        r = random.randrange(2)
+        message = pad(g + message + g,16)
+        if r == 1:
+                return encryptECB(message,key)
+        IV = Random.new().read(BS)
+        return encryptCBC(message,key,IV)
 
 def detectOracleMethod(encryptionOracle,message,key):
-	c = encryptionOracle(message,key)
-	if detectECB(c):
-		return "ECB",c.encode('hex')
-	return "CBC",c.encode('hex')
+        c = encryptionOracle(message,key)
+        return ("ECB", c.encode('hex')) if detectECB(c) else ("CBC", c.encode('hex'))
 
 def findECBBLOCKSize(data):
         BESTSCORE = sys.float_info.max
@@ -69,17 +65,15 @@ def detectOracleBLOCKSIZE(oracle,msg):
 	return findECBBLOCKSize(oracle(msg))[0]
 
 def getNextByte(oracle,blockSize,knownString):
-	myString = "0" * (blockSize - (len(knownString) % blockSize) -1 )
-	d = {}
-	for i in range(0,256):
-		candidate = oracle(myString+knownString+chr(i))
-		l = len(myString) + len(knownString)+1
-		d[candidate[0:l]] = i
-	target = oracle(myString)
-	u = target[0:l]
-	if u in d:
-		return d[u]
-	return None
+        myString = "0" * (blockSize - (len(knownString) % blockSize) -1 )
+        d = {}
+        for i in range(0,256):
+                candidate = oracle(myString+knownString+chr(i))
+                l = len(myString) + len(knownString)+1
+                d[candidate[:l]] = i
+        target = oracle(myString)
+        u = target[:l]
+        return d.get(u, None)
 
 def crackECBOracle(oracle,blockSize,knownBytes):
 	while True:
@@ -135,21 +129,21 @@ def test12():
 	print crackECBOracle(oracle,BLOCKSIZE,"")
 
 def KVtoJSON(s):
-	myjson = "{\n"
-	for kv in s.split("&"):
-		k,v = kv.split("=")
-		myjson += k + ":" + v + "\n"
-	myjson += "}"
-	return myjson
+        myjson = "{\n"
+        for kv in s.split("&"):
+                k,v = kv.split("=")
+                myjson += f"{k}:{v}" + "\n"
+        myjson += "}"
+        return myjson
 
 def JSONtoKV(s):
-	s = replace("{\n",'').replace("}\n","")
-	s = s.split("\n")
-	kvs = []
-	for l in s:
-		k,v = l.split(':')
-		kvs.append(k + "=" + v)
-	return "&".join(kvs)
+        s = replace("{\n",'').replace("}\n","")
+        s = s.split("\n")
+        kvs = []
+        for l in s:
+                k,v = l.split(':')
+                kvs.append(f"{k}={v}")
+        return "&".join(kvs)
 
 #test9()
 #test10()
